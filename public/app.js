@@ -1,35 +1,12 @@
 const chatBox = document.getElementById('chat-box');
 const chatForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('message-input');
-const usernameInput = document.getElementById('username-input');
-const roomInput = document.getElementById('room-input');
-const saveButton = document.getElementById('save-profile');
 const roomLabel = document.getElementById('room-label');
 const statusEl = document.getElementById('status');
-const chatScreen = document.getElementById('chat-screen');
-const landing = document.getElementById('landing');
+const backButton = document.getElementById('back-button');
 
 const socket = io();
-let currentRoom = '';
-
-function getProfile() {
-  const stored = localStorage.getItem('ig-chat-profile');
-  if (!stored) return { username: '', room: currentRoom };
-  try {
-    const parsed = JSON.parse(stored);
-    return {
-      username: parsed.username || '',
-      room: currentRoom,
-    };
-  } catch (err) {
-    return { username: '', room: currentRoom };
-  }
-}
-
-function setProfile(profile) {
-  currentRoom = profile.room || '';
-  localStorage.setItem('ig-chat-profile', JSON.stringify({ username: profile.username || '' }));
-}
+let currentUser = null;
 
 function renderMessage(message, currentUser) {
   if (message.room !== currentUser.room) return;
@@ -74,48 +51,32 @@ function setStatus(text) {
   }
 }
 
-const profile = getProfile();
-usernameInput.value = profile.username;
-roomInput.value = '';
-updateRoomLabel('');
+const sessionRaw = sessionStorage.getItem('ig-chat-session');
+if (!sessionRaw) {
+  window.location.href = '/landing.html';
+}
 
-saveButton.addEventListener('click', () => {
-  const username = usernameInput.value.trim();
-  const room = roomInput.value.trim();
+try {
+  currentUser = sessionRaw ? JSON.parse(sessionRaw) : null;
+} catch (err) {
+  currentUser = null;
+}
 
-  if (!username) {
-    setStatus('Please add your name so your messages show up.');
-    return;
-  }
+if (!currentUser || !currentUser.username || !currentUser.room) {
+  window.location.href = '/landing.html';
+}
 
-  if (!room) {
-    setStatus('Please enter a room code.');
-    return;
-  }
+updateRoomLabel(currentUser.room);
+sessionStorage.removeItem('ig-chat-session');
 
-  const updated = { username, room };
-  setProfile(updated);
-  updateRoomLabel(room);
-  loadMessages(updated);
-  chatScreen.classList.remove('hidden');
-  landing.classList.add('hidden');
-  setStatus('Saved. You are ready to chat.');
+backButton.addEventListener('click', () => {
+  window.location.href = '/landing.html';
 });
 
 chatForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const content = messageInput.value.trim();
-  const current = getProfile();
-
-  if (!current.username) {
-    setStatus('Add your name first.');
-    return;
-  }
-
-  if (!current.room) {
-    setStatus('Enter a room code first.');
-    return;
-  }
+  const current = currentUser;
 
   if (!content) return;
 
@@ -129,5 +90,7 @@ chatForm.addEventListener('submit', (event) => {
 });
 
 socket.on('chat:new', (message) => {
-  renderMessage(message, getProfile());
+  renderMessage(message, currentUser);
 });
+
+loadMessages(currentUser);

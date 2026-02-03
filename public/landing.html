@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Start Friend Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app landing-only">
+    <aside class="panel landing-screen" id="landing">
+      <h2>Start A Friend Chat</h2>
+      <p>Enter a name and a room code to begin. Share the same room code with your friend.</p>
+
+      <label>
+        Your name
+        <input id="username-input" type="text" placeholder="e.g. Sam" maxlength="32" />
+      </label>
+
+      <label>
+        Room code
+        <input id="room-input" type="text" placeholder="Enter room code" maxlength="24" />
+      </label>
+
+      <div class="hint">
+        You both need the same room code to see each other’s messages.
+      </div>
+
+      <button id="start-chat">Start Chat</button>
+
+      <div class="status" id="status"></div>
+    </aside>
+  </main>
+
+  <script src="landing.js"></script>
+</body>
+</html>

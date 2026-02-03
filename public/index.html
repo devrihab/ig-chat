@@ -11,8 +11,11 @@
 </head>
 <body>
   <main class="app">
-    <section class="phone hidden" id="chat-screen">
+    <section class="phone" id="chat-screen">
       <header class="topbar">
+        <button class="icon-btn back-btn" id="back-button" aria-label="Back to start">
+          <span class="arrow"></span>
+        </button>
         <div class="avatar"></div>
         <div>
           <div class="title">Direct</div>
@@ -36,28 +39,7 @@
       </form>
     </section>
 
-    <aside class="panel landing-screen" id="landing">
-      <h2>Start A Friend Chat</h2>
-      <p>Enter a name and a room code to begin. Share the same room code with your friend.</p>
-
-      <label>
-        Your name
-        <input id="username-input" type="text" placeholder="e.g. Sam" maxlength="32" />
-      </label>
-
-      <label>
-        Room code
-        <input id="room-input" type="text" placeholder="Enter room code" maxlength="24" />
-      </label>
-
-      <div class="hint">
-        You both need the same room code to see each other’s messages.
-      </div>
-
-      <button id="save-profile">Save</button>
-
-      <div class="status" id="status"></div>
-    </aside>
+    <div class="status status-floating" id="status"></div>
   </main>
 
   <script src="/socket.io/socket.io.js"></script>
