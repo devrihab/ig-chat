@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IG Direct — Private Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="phone">
+      <header class="topbar">
+        <div class="avatar"></div>
+        <div>
+          <div class="title">Direct</div>
+          <div class="subtitle" id="room-label">Room: main</div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" aria-label="Video">
+            <span class="dot"></span>
+          </button>
+          <button class="icon-btn" aria-label="Info">
+            <span class="ring"></span>
+          </button>
+        </div>
+      </header>
+
+      <section id="chat-box" class="chat"></section>
+
+      <form id="chat-form" class="composer" autocomplete="off">
+        <input id="message-input" type="text" placeholder="Message..." maxlength="500" />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <aside class="panel">
+      <h2>Let’s set this up</h2>
+      <p>This chat runs on your own lightweight server. Pick a name and a room code to keep it private.</p>
+
+      <label>
+        Your name
+        <input id="username-input" type="text" placeholder="e.g. Alex" maxlength="32" />
+      </label>
+
+      <label>
+        Room code
+        <input id="room-input" type="text" placeholder="e.g. risa" maxlength="24" />
+      </label>
+
+      <div class="hint">
+        Share the same room code with your girlfriend, and you’ll both be in the same private chat.
+      </div>
+
+      <button id="save-profile">Save</button>
+
+      <div class="status" id="status"></div>
+    </aside>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

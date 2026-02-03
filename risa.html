@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IG Direct Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #000; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .ig-blue { background-color: #3797F0; }
+        .ig-dark-grey { background-color: #262626; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="h-screen flex flex-col items-center">
+
+    <div class="w-full max-w-md h-full flex flex-col border-x border-gray-800">
+        
+        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-purple-600"></div>
+                <span class="font-bold">Chat_User</span>
+            </div>
+            <div class="flex gap-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48V208a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V48A16,16,0,0,1,56,32H200A16,16,0,0,1,216,48Z" opacity="0.2"></path><path d="M200,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H56V48H200V208Z"></path></svg>
+            </div>
+        </div>
+
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+            </div>
+
+        <div class="p-4">
+            <form id="chat-form" class="flex items-center gap-2 bg-black border border-gray-700 rounded-full px-4 py-2">
+                <input type="text" id="message-input" placeholder="Message..." class="bg-transparent flex-1 outline-none text-sm py-1">
+                <button type="submit" class="text-blue-500 font-semibold text-sm">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 1. Initialize Supabase
+        const SUPABASE_URL = 'https://gvunnllpflgknfhjgspc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2dW5ubGxwZmxna25maGpnc3BjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDAyOTUsImV4cCI6MjA4NTI3NjI5NX0.xu0ruqjNqbpb73BguRkuc3AJwxrktNdObOaHya18nTU';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+
+        // 2. Function to render a single message bubble
+        function renderMessage(msg) {
+            const div = document.createElement('div');
+            const isMe = msg.username === 'Me'; // Simple check for demo
+            
+            div.className = `max-w-[70%] p-3 rounded-2xl text-sm ${isMe ? 'ig-blue self-end rounded-br-none' : 'ig-dark-grey self-start rounded-bl-none'}`;
+            div.innerText = msg.content;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 3. Listen for Real-time Updates
+        supabase
+            .channel('public:messages')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                renderMessage(payload.new);
+            })
+            .subscribe();
+
+        // 4. Send Message Logic
+        chatForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const content = messageInput.value;
+            if (!content) return;
+
+            const { error } = await supabase
+                .from('messages')
+                .insert([{ content: content, username: 'Me' }]);
+
+            if (error) console.error(error);
+            messageInput.value = '';
+        };
+
+        // 5. Initial Load
+        async function loadMessages() {
+            const { data } = await supabase.from('messages').select('*').order('created_at', { ascending: true });
+            data.forEach(renderMessage);
+        }
+        loadMessages();
+    </script>
+</body>
+</html>
