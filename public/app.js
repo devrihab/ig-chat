@@ -10,22 +10,24 @@ const chatScreen = document.getElementById('chat-screen');
 const landing = document.getElementById('landing');
 
 const socket = io();
+let currentRoom = '';
 
 function getProfile() {
   const stored = localStorage.getItem('ig-chat-profile');
-  if (!stored) return { username: '', room: '' };
+  if (!stored) return { username: '', room: currentRoom };
   try {
     const parsed = JSON.parse(stored);
     return {
       username: parsed.username || '',
-      room: '',
+      room: currentRoom,
     };
   } catch (err) {
-    return { username: '', room: '' };
+    return { username: '', room: currentRoom };
   }
 }
 
 function setProfile(profile) {
+  currentRoom = profile.room || '';
   localStorage.setItem('ig-chat-profile', JSON.stringify({ username: profile.username || '' }));
 }
 
