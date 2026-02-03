@@ -6,25 +6,27 @@ const roomInput = document.getElementById('room-input');
 const saveButton = document.getElementById('save-profile');
 const roomLabel = document.getElementById('room-label');
 const statusEl = document.getElementById('status');
+const chatScreen = document.getElementById('chat-screen');
+const landing = document.getElementById('landing');
 
 const socket = io();
 
 function getProfile() {
   const stored = localStorage.getItem('ig-chat-profile');
-  if (!stored) return { username: '', room: 'main' };
+  if (!stored) return { username: '', room: '' };
   try {
     const parsed = JSON.parse(stored);
     return {
       username: parsed.username || '',
-      room: parsed.room || 'main',
+      room: '',
     };
   } catch (err) {
-    return { username: '', room: 'main' };
+    return { username: '', room: '' };
   }
 }
 
 function setProfile(profile) {
-  localStorage.setItem('ig-chat-profile', JSON.stringify(profile));
+  localStorage.setItem('ig-chat-profile', JSON.stringify({ username: profile.username || '' }));
 }
 
 function renderMessage(message, currentUser) {
@@ -58,7 +60,7 @@ async function loadMessages(profile) {
 }
 
 function updateRoomLabel(room) {
-  roomLabel.textContent = `Room: ${room}`;
+  roomLabel.textContent = room ? `Room: ${room}` : 'Room: —';
 }
 
 function setStatus(text) {
@@ -72,17 +74,20 @@ function setStatus(text) {
 
 const profile = getProfile();
 usernameInput.value = profile.username;
-roomInput.value = profile.room;
-updateRoomLabel(profile.room);
-
-loadMessages(profile);
+roomInput.value = '';
+updateRoomLabel('');
 
 saveButton.addEventListener('click', () => {
   const username = usernameInput.value.trim();
-  const room = roomInput.value.trim() || 'main';
+  const room = roomInput.value.trim();
 
   if (!username) {
     setStatus('Please add your name so your messages show up.');
+    return;
+  }
+
+  if (!room) {
+    setStatus('Please enter a room code.');
     return;
   }
 
@@ -90,6 +95,8 @@ saveButton.addEventListener('click', () => {
   setProfile(updated);
   updateRoomLabel(room);
   loadMessages(updated);
+  chatScreen.classList.remove('hidden');
+  landing.classList.add('hidden');
   setStatus('Saved. You are ready to chat.');
 });
 
@@ -100,6 +107,11 @@ chatForm.addEventListener('submit', (event) => {
 
   if (!current.username) {
     setStatus('Add your name first.');
+    return;
+  }
+
+  if (!current.room) {
+    setStatus('Enter a room code first.');
     return;
   }
 

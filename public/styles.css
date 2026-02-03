@@ -31,6 +31,10 @@ body {
   padding: 40px 24px;
 }
 
+.hidden {
+  display: none;
+}
+
 .phone {
   background: linear-gradient(180deg, #1c1c23, #0f0f14 70%);
   border-radius: 28px;

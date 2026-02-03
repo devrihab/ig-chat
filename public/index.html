@@ -11,7 +11,7 @@
 </head>
 <body>
   <main class="app">
-    <section class="phone">
+    <section class="phone hidden" id="chat-screen">
       <header class="topbar">
         <div class="avatar"></div>
         <div>
@@ -36,22 +36,22 @@
       </form>
     </section>
 
-    <aside class="panel">
-      <h2>Let’s set this up</h2>
-      <p>This chat runs on your own lightweight server. Pick a name and a room code to keep it private for your friend chat.</p>
+    <aside class="panel" id="landing">
+      <h2>Start A Friend Chat</h2>
+      <p>Enter a name and a room code to begin. Share the same room code with your friend.</p>
 
       <label>
         Your name
-        <input id="username-input" type="text" placeholder="e.g. Rihab" maxlength="32" />
+        <input id="username-input" type="text" placeholder="e.g. Sam" maxlength="32" />
       </label>
 
       <label>
         Room code
-        <input id="room-input" type="text" placeholder="Room code" maxlength="24" />
+        <input id="room-input" type="text" placeholder="Enter room code" maxlength="24" />
       </label>
 
       <div class="hint">
-        Share the same room code with your friend, and you’ll both be in the same private chat.
+        You both need the same room code to see each other’s messages.
       </div>
 
       <button id="save-profile">Save</button>
