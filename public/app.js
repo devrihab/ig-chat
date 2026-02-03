@@ -36,7 +36,10 @@ function renderMessage(message, currentUser) {
 
   const meta = document.createElement('span');
   meta.className = 'meta';
-  const time = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const createdAt = message.createdAt || message.created_at;
+  const time = createdAt
+    ? new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '--:--';
   meta.textContent = `${message.username} · ${time}`;
 
   bubble.appendChild(meta);
@@ -48,7 +51,10 @@ async function loadMessages(profile) {
   const res = await fetch('/api/messages');
   const data = await res.json();
   chatBox.innerHTML = '';
-  data.forEach((msg) => renderMessage(msg, profile));
+  data.forEach((msg) => renderMessage({
+    ...msg,
+    createdAt: msg.created_at || msg.createdAt,
+  }, profile));
 }
 
 function updateRoomLabel(room) {

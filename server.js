@@ -1,47 +1,41 @@
 const path = require('path');
-const fs = require('fs');
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const DATA_DIR = path.join(__dirname, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'messages.json');
-const MAX_MESSAGES = 300;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function ensureDataFile() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, '[]', 'utf8');
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars.');
 }
 
-function readMessages() {
-  ensureDataFile();
-  try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch (err) {
-    return [];
-  }
-}
-
-function writeMessages(messages) {
-  ensureDataFile();
-  fs.writeFileSync(DATA_FILE, JSON.stringify(messages, null, 2), 'utf8');
-}
+const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-app.get('/api/messages', (req, res) => {
-  res.json(readMessages());
+app.get('/api/messages', async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured.' });
+
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
 });
 
 io.on('connection', (socket) => {
-  socket.on('chat:message', (payload) => {
+  socket.on('chat:message', async (payload) => {
     if (!payload || typeof payload !== 'object') return;
 
     const username = String(payload.username || '').trim();
@@ -51,23 +45,23 @@ io.on('connection', (socket) => {
     if (!username || !content) return;
     if (content.length > 500) return;
 
-    const message = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      username,
-      content,
-      room,
-      createdAt: new Date().toISOString(),
-    };
+    if (!supabase) return;
 
-    const messages = readMessages();
-    messages.push(message);
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([{ username, content, room }])
+      .select('*')
+      .single();
 
-    if (messages.length > MAX_MESSAGES) {
-      messages.splice(0, messages.length - MAX_MESSAGES);
-    }
+    if (error || !data) return;
 
-    writeMessages(messages);
-    io.emit('chat:new', message);
+    io.emit('chat:new', {
+      id: data.id,
+      username: data.username,
+      content: data.content,
+      room: data.room,
+      createdAt: data.created_at,
+    });
   });
 });
 
